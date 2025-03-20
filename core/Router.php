@@ -7,6 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../app/controllers/AuthController.php';
+require_once __DIR__ . '/../app/controllers/AdminController.php';
 
 class Router {
     public static function route() {
@@ -55,7 +56,6 @@ class Router {
                     require_once __DIR__ . '/../app/views/auth/login.php';
                     break;
                 case "welcome":
-                    // Vérification de session pour éviter une redirection vers home
                     if (!isset($_SESSION['user_id'])) {
                         $_SESSION['error'] = "Vous devez être connecté pour accéder à cette page.";
                         header("Location: /index.php?action=login");
@@ -69,6 +69,28 @@ class Router {
                 case "logout":
                     $authController->logout();
                     break;
+    
+                case "dashboard":
+                    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+                        $_SESSION['error'] = "Accès refusé.";
+                        header("Location: /index.php?action=home");
+                        exit();
+                    }
+                    $adminController = new AdminController();
+                    $adminController->dashboard();
+                    break;
+
+                case "deleteUser":
+                    if (isset($_GET['id']) && ctype_digit($_GET['id'])) {
+                        $adminController = new AdminController();
+                        $adminController->deleteUser($_GET['id']);
+                    } else {
+                        $_SESSION['error'] = "ID utilisateur invalide.";
+                        header("Location: /index.php?action=dashboard");
+                        exit();
+                    }
+                    break;
+
                 default:
                     $_SESSION['error'] = "Page non trouvée.";
                     header("Location: /index.php?action=home");

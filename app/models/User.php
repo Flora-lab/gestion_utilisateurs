@@ -15,6 +15,20 @@ class User {
         return $stmt->execute([$username, $email, $hashedPassword, $role_id]);
     }
     
+    public function getAllUsers() {
+        $sql = "SELECT users.id, users.username, users.email, roles.name AS role FROM users 
+                JOIN roles ON users.role_id = roles.id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function deleteUser($userId) {
+        $sql = "DELETE FROM users WHERE id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$userId]);
+    }
+    
 
     public function getUserByEmail($email) {
         $sql = "SELECT * FROM users WHERE email = ?";

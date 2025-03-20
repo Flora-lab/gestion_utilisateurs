@@ -57,9 +57,13 @@ class AuthController {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $this->userModel->getUserRole($user['id']); // Récupérer le rôle
-    
-            header("Location: /index.php?action=welcome");
+            if ($_SESSION['role'] === "Admin") {
+                header("Location: /index.php?action=dashboard");
+            } else {
+                header("Location: /index.php?action=welcome");
+            }
             exit();
+
         } else {
             $_SESSION['error'] = "Mot de passe incorrect.";
             header("Location: /index.php?action=login");

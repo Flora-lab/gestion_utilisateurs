@@ -29,6 +29,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <input type="email" name="email" required autocomplete="off"
                     class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
+            
 
             <div>
                 <label class="block text-sm font-medium text-gray-700">Mot de passe</label>
