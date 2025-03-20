@@ -1,0 +1,76 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_once __DIR__ . '/../models/User.php';
+
+class AuthController {
+    private $userModel;
+
+    public function __construct() {
+        $this->userModel = new User();
+    }
+
+    public function register($username, $email, $password, $confirm_password) {
+        if ($password !== $confirm_password) {
+            $_SESSION['error'] = "Les mots de passe ne correspondent pas.";
+            header("Location: /index.php?action=register");
+            exit();
+        }
+
+        if ($this->userModel->getUserByEmail($email)) {
+            $_SESSION['error'] = "Cet email est déjà utilisé.";
+            header("Location: /index.php?action=register");
+            exit();
+        }
+
+        if ($this->userModel->createUser($username, $email, $password)) {
+            $_SESSION['success'] = "Inscription réussie ! Connectez-vous.";
+            header("Location: /index.php?action=login");
+            exit();
+        } else {
+            $_SESSION['error'] = "Une erreur est survenue lors de l'inscription.";
+            header("Location: /index.php?action=register");
+            exit();
+        }
+    }
+
+    public function login($email, $password) {
+        $user = $this->userModel->getUserByEmail($email);
+
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            header("Location: /index.php?action=welcome");
+            exit();
+        } else {
+            $_SESSION['error'] = "Email ou mot de passe incorrect.";
+            header("Location: /index.php?action=login");
+            exit();
+        }
+        if (!$user) { // Vérifier si l'utilisateur existe
+            $_SESSION['error'] = "Aucun utilisateur trouvé avec cet email.";
+            header("Location: /index.php?action=login");
+            exit();
+        }
+        if (password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $this->userModel->getUserRole($user['id']); // Récupérer le rôle
+    
+            header("Location: /index.php?action=welcome");
+            exit();
+        } else {
+            $_SESSION['error'] = "Mot de passe incorrect.";
+            header("Location: /index.php?action=login");
+            exit();
+        }
+    }
+
+    public function logout() {
+        session_destroy();
+        header("Location: /index.php?action=home");
+        exit();
+    }
+}
+?>
