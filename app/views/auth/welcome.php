@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$username = $_SESSION['username'] ?? 'Utilisateur';
+$username = $_SESSION['username'] ?? 'Utilisateur'; // Récupère le nom d'utilisateur connecté
 $role = $_SESSION['role'] ?? 'Client';
 ?>
 

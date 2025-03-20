@@ -29,17 +29,17 @@ class Router {
                     exit();
                 }
             } elseif ($action === "login") {
-                $email = $_POST['email'] ?? null;
+                $username = $_POST['username'] ?? null;
                 $password = $_POST['password'] ?? null;
-
-                if ($email && $password) {
-                    $authController->login($email, $password);
+            
+                if ($username && $password) {
+                    $authController->login($username, $password);
                 } else {
-                    $_SESSION['error'] = "Email et mot de passe requis.";
+                    $_SESSION['error'] = "Nom d'utilisateur et mot de passe requis.";
                     header("Location: /index.php?action=login");
                     exit();
                 }
-            } else {
+            }   else {
                 $_SESSION['error'] = "Action non autorisée.";
                 header("Location: /index.php?action=home");
                 exit();
@@ -55,6 +55,7 @@ class Router {
                 case "login":
                     require_once __DIR__ . '/../app/views/auth/login.php';
                     break;
+                
                 case "welcome":
                     if (!isset($_SESSION['user_id'])) {
                         $_SESSION['error'] = "Vous devez être connecté pour accéder à cette page.";

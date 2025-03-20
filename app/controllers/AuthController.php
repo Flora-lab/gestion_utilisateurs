@@ -36,15 +36,17 @@ class AuthController {
         }
     }
 
-    public function login($email, $password) {
-        $user = $this->userModel->getUserByEmail($email);
-
+    public function login($username, $password) {
+        $userModel = new User();
+        $user = $userModel->getUserByUsername($username); // Nouvelle méthode dans User.php
+    
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username']; // Stocke le nom d'utilisateur
             header("Location: /index.php?action=welcome");
             exit();
         } else {
-            $_SESSION['error'] = "Email ou mot de passe incorrect.";
+            $_SESSION['error'] = "Nom d'utilisateur ou mot de passe incorrect.";
             header("Location: /index.php?action=login");
             exit();
         }
@@ -63,6 +65,7 @@ class AuthController {
                 header("Location: /index.php?action=welcome");
             }
             exit();
+    
 
         } else {
             $_SESSION['error'] = "Mot de passe incorrect.";

@@ -36,6 +36,7 @@ class User {
         $stmt->execute([$email]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
     public function getUserByUsername($username) {
         $sql = "SELECT * FROM users WHERE username = ?";
         $stmt = $this->pdo->prepare($sql);
