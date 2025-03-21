@@ -39,10 +39,6 @@ class Router {
                     header("Location: /index.php?action=login");
                     exit();
                 }
-            }   else {
-                $_SESSION['error'] = "Action non autorisée.";
-                header("Location: /index.php?action=home");
-                exit();
             }
         } else {
             switch ($action) {
@@ -55,24 +51,22 @@ class Router {
                 case "login":
                     require_once __DIR__ . '/../app/views/auth/login.php';
                     break;
-                
-                case "welcome":
+                case "profile_admin":
+                    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
+                        header("Location: /index.php?action=home");
+                        exit();
+                    }
+                    require_once __DIR__ . '/../app/views/admin/profile_admin.php';
+                    break;
+                case "profile_user":
                     if (!isset($_SESSION['user_id'])) {
-                        $_SESSION['error'] = "Vous devez être connecté pour accéder à cette page.";
                         header("Location: /index.php?action=login");
                         exit();
                     }
-                    require_once __DIR__ . '/../app/views/auth/welcome.php';
+                    require_once __DIR__ . '/../app/views/auth/profile_user.php';
                     break;
-                case "profile":
-                    require_once __DIR__ . '/../app/views/auth/profile.php';
-                    break;
-                case "logout":
-                    $authController->logout();
-                    break;
-    
                 case "dashboard":
-                    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+                    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
                         $_SESSION['error'] = "Accès refusé.";
                         header("Location: /index.php?action=home");
                         exit();
@@ -80,18 +74,9 @@ class Router {
                     $adminController = new AdminController();
                     $adminController->dashboard();
                     break;
-
-                case "deleteUser":
-                    if (isset($_GET['id']) && ctype_digit($_GET['id'])) {
-                        $adminController = new AdminController();
-                        $adminController->deleteUser($_GET['id']);
-                    } else {
-                        $_SESSION['error'] = "ID utilisateur invalide.";
-                        header("Location: /index.php?action=dashboard");
-                        exit();
-                    }
+                case "logout":
+                    $authController->logout();
                     break;
-
                 default:
                     $_SESSION['error'] = "Page non trouvée.";
                     header("Location: /index.php?action=home");

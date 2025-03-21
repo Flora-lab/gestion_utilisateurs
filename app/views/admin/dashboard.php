@@ -1,84 +1,127 @@
+<?php 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
+    header("Location: /index.php?action=home");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de bord Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Dashboard Admin</title>
+    <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-100">
-    <div class="flex">
-        <!-- Sidebar -->
-        <aside class="w-64 bg-purple-800 text-white h-screen p-6">
-            <h2 class="text-2xl font-bold mb-6">SiteName</h2>
-            <nav>
-                <ul>
-                    <li class="mb-4"><a href="#" class="flex items-center space-x-2"><span>🏢</span><span>Dashboard</span></a></li>
-                    <li class="mb-4"><a href="#">Students</a></li>
-                    <li class="mb-4"><a href="#">Teachers</a></li>
-                    <li class="mb-4"><a href="#">Events</a></li>
-                    <li class="mb-4"><a href="#">Finance</a></li>
-                </ul>
-            </nav>
-        </aside>
-        
-        <!-- Main Content -->
-        <main class="flex-1 p-6">
-            <h1 class="text-3xl font-bold text-gray-700">Tableau de bord</h1>
-            
-            <!-- Stats -->
-            <div class="grid grid-cols-3 gap-6 my-6">
-                <div class="bg-white p-6 rounded-lg shadow text-center">
-                    <h3 class="text-2xl font-bold">932</h3>
-                    <p class="text-gray-500">Utilisateurs</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow text-center">
-                    <h3 class="text-2xl font-bold">754</h3>
-                    <p class="text-gray-500">Clients</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow text-center">
-                    <h3 class="text-2xl font-bold">01</h3>
-                    <p class="text-gray-500">Administrateurs</p>
-                </div>
-            </div>
+<body>
 
-            <!-- Calendar & Logs -->
-            <div class="grid grid-cols-2 gap-6">
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-bold">Calendrier</h3>
-                    <p class="text-gray-500">Mars 2025</p>
-                    <!-- Placeholder for calendar -->
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-bold">Logs de connexion</h3>
-                    <!-- Placeholder for chart -->
+<div class="sidebar">
+    <h2>SiteName</h2>
+    <ul>
+        <li><a href="/index.php?action=dashboard">Dashboard</a></li>
+        <li><a href="/index.php?action=students">Students</a></li>
+        <li><a href="/index.php?action=logout">Déconnexion</a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+    <header>
+        <h1>Tableau de bord</h1>
+        <div class="profile">
+            <img src="/uploads/<?php echo $_SESSION['profile_pic'] ?? 'default.jpg'; ?>" alt="Profil">
+            <div class="dropdown">
+                <button class="dropbtn"><?php echo $_SESSION['username']; ?></button>
+                <div class="dropdown-content">
+                    <a href="/index.php?action=editProfile">Modifier Profil</a>
+                    <a href="/index.php?action=logout">Se Déconnecter</a>
                 </div>
             </div>
-            
-            <!-- Liste des utilisateurs -->
-            <div class="bg-white p-6 rounded-lg shadow my-6">
-                <h3 class="text-lg font-bold">Liste des utilisateurs</h3>
-                <table class="w-full mt-4">
-                    <thead>
-                        <tr>
-                            <th class="text-left">Nom</th>
-                            <th class="text-left">ID</th>
-                            <th class="text-left">Statut</th>
-                            <th class="text-left">Solde</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Samantha William</td>
-                            <td>123456789</td>
-                            <td>Client VII A</td>
-                            <td>$50,036</td>
-                        </tr>
-                        <!-- Autres lignes -->
-                    </tbody>
-                </table>
-            </div>
-        </main>
-    </div>
+        </div>
+    </header>
+
+    <section class="stats">
+        <div class="stat-card">
+            <h3>Utilisateurs</h3>
+            <p><?php echo $stats['total_users']; ?></p>
+        </div>
+        <div class="stat-card">
+            <h3>Clients</h3>
+            <p><?php echo $stats['total_clients']; ?></p>
+        </div>
+        <div class="stat-card">
+            <h3>Administrateurs</h3>
+            <p><?php echo $stats['total_admins']; ?></p>
+        </div>
+    </section>
+
+    <section class="recent-users">
+        <h3>Nouveaux utilisateurs</h3>
+        <ul>
+            <?php foreach ($recentUsers as $user): ?>
+                <li><?php echo $user['username']; ?> - <?php echo $user['email']; ?></li>
+            <?php endforeach; ?>
+        </ul>
+        <button onclick="window.location.href='/index.php?action=addUser'">Ajouter un utilisateur</button>
+    </section>
+
+    <section class="logins">
+        <h3>Logs de connexion</h3>
+        <canvas id="loginChart"></canvas>
+    </section>
+
+    <section class="user-list">
+        <h3>Liste des utilisateurs</h3>
+        <table>
+            <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+            <?php foreach ($users as $user): ?>
+                <tr>
+                    <td><?php echo $user['username']; ?></td>
+                    <td><?php echo $user['email']; ?></td>
+                    <td><?php echo $user['role']; ?></td>
+                    <td><?php echo $user['status']; ?></td>
+                    <td>
+                        <button onclick="modifyUser(<?php echo $user['id']; ?>)">Modifier</button>
+                        <button onclick="deleteUser(<?php echo $user['id']; ?>)">Supprimer</button>
+                        <button onclick="toggleStatus(<?php echo $user['id']; ?>)">
+                            <?php echo $user['status'] == 'active' ? 'Désactiver' : 'Activer'; ?>
+                        </button>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+    </section>
+</div>
+
+<script>
+    var loginData = <?php echo json_encode($loginLogs ?? []); ?>;
+    var labels = loginData.map(d => d.day);
+    var counts = loginData.map(d => d.count);
+
+    var ctx = document.getElementById('loginChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Connexions par jour',
+                data: counts,
+                backgroundColor: 'orange',
+                borderColor: 'red',
+                borderWidth: 1
+            }]
+        }
+    });
+</script>
+
 </body>
 </html>
