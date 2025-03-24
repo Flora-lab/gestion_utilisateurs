@@ -101,8 +101,73 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
                             <td class="py-2 px-4"><?php echo $user['role']; ?></td>
                             <td class="py-2 px-4"><?php echo $user['status']; ?></td>
                             <td class="py-2 px-4">
-                                <button onclick="modifyUser(<?php echo $user['id']; ?>)"
-                                    class="bg-yellow-500 text-white px-2 py-1 rounded">Modifier</button>
+                                <!-- Bouton Modifier -->
+                                <button onclick="openEditModal(<?php echo $user['id']; ?>, '<?php echo $user['username']; ?>', '<?php echo $user['email']; ?>')" 
+                                        class="bg-yellow-500 text-white px-2 py-1 rounded">Modifier</button>
+
+                                <!-- Modal Popup -->
+                                <div id="editModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+                                    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                                        <h2 class="text-2xl font-semibold mb-4">Modifier l'utilisateur</h2>
+                                        <form id="editForm">
+                                            <input type="hidden" name="user_id" id="userId">
+                                            <div class="mb-4">
+                                                <label class="block text-gray-700">Nom d'utilisateur</label>
+                                                <input type="text" id="username" name="username" class="border p-2 w-full rounded" required>
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="block text-gray-700">Email</label>
+                                                <input type="email" id="email" name="email" class="border p-2 w-full rounded" required>
+                                            </div>
+                                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Modifier</button>
+                                            <button type="button" onclick="closeEditModal()" class="bg-gray-500 text-white px-4 py-2 rounded ml-2">Annuler</button>
+                                        </form>
+                                        <div id="editMessage" class="mt-4 text-green-600 hidden">Modifications enregistrées !</div>
+                                        <div id="editErrorMessage" class="mt-4 text-red-600 hidden"></div>
+                                    </div>
+                                </div>
+
+                                <script>
+                                // Ouvrir le modal avec les valeurs existantes
+                                function openEditModal(userId, username, email) {
+                                    document.getElementById('userId').value = userId;
+                                    document.getElementById('username').value = username;
+                                    document.getElementById('email').value = email;
+                                    document.getElementById('editModal').classList.remove('hidden');
+                                }
+
+                                // Fermer le modal
+                                function closeEditModal() {
+                                    document.getElementById('editModal').classList.add('hidden');
+                                }
+
+                                // Gérer la soumission du formulaire
+                                document.getElementById('editForm').addEventListener('submit', function(e) {
+                                    e.preventDefault();
+                                    const formData = new FormData(this);
+
+                                    fetch('/index.php?action=editUser', {
+                                        method: 'POST',
+                                        body: formData
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            document.getElementById('editMessage').classList.remove('hidden');
+                                            document.getElementById('editErrorMessage').classList.add('hidden');
+                                            setTimeout(() => location.reload(), 1500); // Recharger après 1,5s
+                                        } else {
+                                            document.getElementById('editErrorMessage').textContent = data.message;
+                                            document.getElementById('editErrorMessage').classList.remove('hidden');
+                                        }
+                                    })
+                                    .catch(err => {
+                                        document.getElementById('editErrorMessage').textContent = "Une erreur s'est produite.";
+                                        document.getElementById('editErrorMessage').classList.remove('hidden');
+                                    });
+                                });
+                                </script>
+
                                 <button onclick="deleteUser(<?php echo $user['id']; ?>)"
                                     class="bg-red-500 text-white px-2 py-1 rounded">Supprimer</button>
                                 <button onclick="toggleStatus(<?php echo $user['id']; ?>)"

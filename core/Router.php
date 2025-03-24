@@ -12,33 +12,47 @@ require_once __DIR__ . '/../app/controllers/AdminController.php';
 class Router {
     public static function route() {
         $authController = new AuthController();
+        $adminController = new AdminController();
         $action = $_GET['action'] ?? 'home';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if ($action === "register") {
-                $username = $_POST['username'] ?? null;
-                $email = $_POST['email'] ?? null;
-                $password = $_POST['password'] ?? null;
-                $confirm_password = $_POST['confirm_password'] ?? null;
+            switch ($action) {
+                case "register":
+                    $username = $_POST['username'] ?? null;
+                    $email = $_POST['email'] ?? null;
+                    $password = $_POST['password'] ?? null;
+                    $confirm_password = $_POST['confirm_password'] ?? null;
 
-                if ($username && $email && $password && $confirm_password) {
-                    $authController->register($username, $email, $password, $confirm_password);
-                } else {
-                    $_SESSION['error'] = "Tous les champs sont requis.";
-                    header("Location: /index.php?action=register");
-                    exit();
-                }
-            } elseif ($action === "login") {
-                $username = $_POST['username'] ?? null;
-                $password = $_POST['password'] ?? null;
-            
-                if ($username && $password) {
-                    $authController->login($username, $password);
-                } else {
-                    $_SESSION['error'] = "Nom d'utilisateur et mot de passe requis.";
-                    header("Location: /index.php?action=login");
-                    exit();
-                }
+                    if ($username && $email && $password && $confirm_password) {
+                        $authController->register($username, $email, $password, $confirm_password);
+                    } else {
+                        $_SESSION['error'] = "Tous les champs sont requis.";
+                        header("Location: /index.php?action=register");
+                        exit();
+                    }
+                    break;
+
+                case "login":
+                    $username = $_POST['username'] ?? null;
+                    $password = $_POST['password'] ?? null;
+
+                    if ($username && $password) {
+                        $authController->login($username, $password);
+                    } else {
+                        $_SESSION['error'] = "Nom d'utilisateur et mot de passe requis.";
+                        header("Location: /index.php?action=login");
+                        exit();
+                    }
+                    break;
+
+                case "editUser":
+                    $adminController->editUser($_POST);
+                    break;
+
+                default:
+                    $_SESSION['error'] = "Action non reconnue.";
+                    header("Location: /index.php?action=dashboard");
+                    break;
             }
         } else {
             switch ($action) {
@@ -71,9 +85,17 @@ class Router {
                         header("Location: /index.php?action=home");
                         exit();
                     }
-                    $adminController = new AdminController();
                     $adminController->dashboard();
                     break;
+                case "editUser":
+                    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                        $adminController->editUser($_POST);
+                    } else {
+                        $_SESSION['error'] = "Méthode non autorisée.";
+                        header("Location: /index.php?action=dashboard");
+                    }
+                    break;
+                    
                 case "logout":
                     $authController->logout();
                     break;

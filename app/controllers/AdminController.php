@@ -87,25 +87,29 @@ class AdminController {
         exit();
     }
 
-    public function updateProfilePicture($userId, $file) {
-        if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] != $userId) {
-            $_SESSION['error'] = "Accès refusé.";
-            header("Location: /index.php?action=welcome");
+    public function editUser($data) {
+        $userId = $data['user_id'] ?? null;
+        $username = $data['username'] ?? null;
+        $email = $data['email'] ?? null;
+    
+        if (!$userId || !$username || !$email) {
+            echo json_encode(['success' => false, 'message' => "Tous les champs sont requis."]);
             exit();
         }
-
-        $targetDir = __DIR__ . "/../uploads/";
-        $targetFile = $targetDir . basename($file["name"]);
-
-        if (move_uploaded_file($file["tmp_name"], $targetFile)) {
-            $this->userModel->updateProfilePicture($userId, $file["name"]);
-            $_SESSION['success'] = "Photo de profil mise à jour.";
+    
+        // Log pour vérifier les données reçues
+        error_log("Données reçues: userId = $userId, username = $username, email = $email");
+    
+        $result = $this->userModel->editUser($userId, $username, $email);
+        if ($result) {
+            echo json_encode(['success' => true]);
         } else {
-            $_SESSION['error'] = "Erreur lors du téléchargement.";
+            echo json_encode(['success' => false, 'message' => "Erreur lors de la mise à jour."]);
         }
-
-        header("Location: /index.php?action=dashboard");
         exit();
     }
+    
+    
+
 }
 ?>

@@ -10,10 +10,12 @@ class User {
 
     public function createUserByAdmin($username, $email, $password, $role_id) {
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        $sql = "INSERT INTO users (username, email, password, role_id, status, created_at) VALUES (?, ?, ?, ?, 'active', NOW())";
+        $sql = "INSERT INTO users (username, email, password, role_id, status, created_at) 
+                VALUES (?, ?, ?, ?, 'active', NOW())";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$username, $email, $hashedPassword, $role_id]);
     }
+    
 
     public function createUser($username, $email, $password, $role_id = 2) {
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
@@ -113,6 +115,7 @@ class User {
         $stmt->execute([$username]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
 
     public function verifyUser($email, $password) {
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ?");
@@ -127,5 +130,22 @@ class User {
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    public function editUser($userId, $username, $email) {
+        try {
+            $sql = "UPDATE users SET username = ?, email = ? WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute([$username, $email, $userId]);
+    
+            if (!$result) {
+                error_log("Erreur SQL: " . implode(" | ", $stmt->errorInfo()));
+            }
+            return $result;
+        } catch (PDOException $e) {
+            error_log("Exception PDO: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    
 }
 ?>
