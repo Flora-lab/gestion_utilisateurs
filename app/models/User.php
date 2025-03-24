@@ -9,12 +9,18 @@ class User {
     }
 
     public function createUserByAdmin($username, $email, $password, $role_id) {
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        $sql = "INSERT INTO users (username, email, password, role_id, status, created_at) 
-                VALUES (?, ?, ?, ?, 'active', NOW())";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$username, $email, $hashedPassword, $role_id]);
+        try {
+            $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+            $sql = "INSERT INTO users (username, email, password, role_id, status, created_at) 
+                    VALUES (?, ?, ?, ?, 'active', NOW())";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$username, $email, $hashedPassword, $role_id]);
+        } catch (PDOException $e) {
+            error_log("Erreur SQL : " . $e->getMessage());
+            return false;
+        }
     }
+    
     
 
     public function createUser($username, $email, $password, $role_id = 2) {

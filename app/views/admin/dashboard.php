@@ -64,8 +64,91 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
         <section class="mt-6 bg-white p-6 rounded shadow">
             <div class="flex justify-between items-center">
                 <h3 class="text-lg font-semibold">Nouveaux utilisateurs</h3>
-                <button onclick="window.location.href='/index.php?action=addUser'"
-                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Ajouter</button>
+                <button onclick="openAddUserPopup()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Ajouter un utilisateur</button>
+                <!-- Popup pour ajouter un utilisateur -->
+            <div id="addUserPopup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
+                <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+                    <h2 class="text-2xl font-semibold mb-4">Ajouter un utilisateur</h2>
+                    <form id="addUserForm">
+                        <div>
+                            <label class="block mb-2">Nom d'utilisateur</label>
+                            <input type="text" name="username" class="border p-2 w-full rounded" required>
+                        </div>
+                        <div>
+                            <label class="block mb-2">Email</label>
+                            <input type="email" name="email" class="border p-2 w-full rounded" required>
+                        </div>
+                        <div>
+                            <label class="block mb-2">Mot de passe</label>
+                            <input type="password" name="password" class="border p-2 w-full rounded" required>
+                        </div>
+                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Ajouter</button>
+                        <button type="button" onclick="closeAddUserPopup()" class="bg-gray-400 text-white px-4 py-2 rounded ml-2">Annuler</button>
+                    </form>
+                    <div id="addUserMessage" class="mt-4 text-green-600 hidden">Utilisateur ajouté avec succès !</div>
+                    <div id="addUserError" class="mt-4 text-red-600 hidden">Une erreur s'est produite.</div>
+                </div>
+            </div>
+            <!-- Ouvrir le popup d'ajout -->
+        <script>
+        function openAddUserPopup() {
+            document.getElementById('addUserPopup').classList.remove('hidden');
+        }
+
+        // Fermer le popup d'ajout
+        function closeAddUserPopup() {
+            document.getElementById('addUserPopup').classList.add('hidden');
+        }
+
+        // Gérer la soumission du formulaire d'ajout
+        document.getElementById('addUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('/index.php?action=addUser', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('addUserMessage').classList.remove('hidden');
+                    document.getElementById('addUserError').classList.add('hidden');
+
+                    // Mise à jour du tableau sans rechargement
+                    const userList = document.querySelector('tbody'); // Assurez-vous que tbody a un bon ID ou est bien sélectionné
+                    const newRow = `
+                        <tr class="border-t">
+                            <td class="py-2 px-4">${formData.get('username')}</td>
+                            <td class="py-2 px-4">${formData.get('email')}</td>
+                            <td class="py-2 px-4">Client</td>
+                            <td class="py-2 px-4">Active</td>
+                            <td class="py-2 px-4">
+                                <button class="bg-yellow-500 text-white px-2 py-1 rounded">Modifier</button>
+                                <button class="bg-red-500 text-white px-2 py-1 rounded">Supprimer</button>
+                                <button class="bg-gray-500 text-white px-2 py-1 rounded">Désactiver</button>
+                            </td>
+                        </tr>
+                    `;
+                    userList.insertAdjacentHTML('beforeend', newRow);
+
+                    // Fermer le popup après 2 secondes
+                    setTimeout(() => {
+                        closeAddUserPopup();
+                    }, 2000);
+                } else {
+                    document.getElementById('addUserError').textContent = data.message;
+                    document.getElementById('addUserError').classList.remove('hidden');
+                }
+            })
+            .catch(err => {
+                document.getElementById('addUserError').textContent = "Une erreur s'est produite : " + err;
+                document.getElementById('addUserError').classList.remove('hidden');
+            });
+        });
+
+        </script>
+
             </div>
             <ul class="mt-4 space-y-2">
                 <?php foreach ($recentUsers as $user): ?>
@@ -103,7 +186,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
                             <td class="py-2 px-4">
                                 <!-- Bouton Modifier -->
                                 <button onclick="openEditModal(<?php echo $user['id']; ?>, '<?php echo $user['username']; ?>', '<?php echo $user['email']; ?>')" 
-                                        class="bg-yellow-500 text-white px-2 py-1 rounded">Modifier</button>
+                                        class="text-white px-2 py-1 rounded">🖊️</button>
 
                                 <!-- Modal Popup -->
                                 <div id="editModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
@@ -169,10 +252,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
                                 </script>
 
                                 <button onclick="deleteUser(<?php echo $user['id']; ?>)"
-                                    class="bg-red-500 text-white px-2 py-1 rounded">Supprimer</button>
+                                    class="text-white px-2 py-1 rounded">🗑️</button>
                                 <button onclick="toggleStatus(<?php echo $user['id']; ?>)"
-                                    class="bg-gray-500 text-white px-2 py-1 rounded">
-                                    <?php echo $user['status'] == 'active' ? 'Désactiver' : 'Activer'; ?>
+                                    class=" text-white px-2 py-1 rounded">
+                                    <?php echo $user['status'] == 'active' ? '🔕' : 'Activer'; ?>
                                 </button>
                             </td>
                         </tr>

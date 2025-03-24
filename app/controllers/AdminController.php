@@ -109,6 +109,26 @@ class AdminController {
         exit();
     }
     
+    public function addUser($data) {
+        $username = $data['username'] ?? null;
+        $email = $data['email'] ?? null;
+        $password = $data['password'] ?? null;
+    
+        if (!$username || !$email || !$password) {
+            echo json_encode(['success' => false, 'message' => "Tous les champs sont requis."]);
+            exit();
+        }
+    
+        $result = $this->userModel->createUserByAdmin($username, $email, $password, 2); // 2 = rôle Client
+    
+        if ($result) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => "Erreur lors de l'ajout de l'utilisateur."]);
+        }
+        exit(); // IMPORTANT : Empêche l'affichage HTML
+    }
+    
     
 
 }

@@ -95,6 +95,16 @@ class Router {
                         header("Location: /index.php?action=dashboard");
                     }
                     break;
+                case "addUser":
+                    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                        $adminController = new AdminController();
+                        $adminController->addUser($_POST);
+                    } else {
+                        echo json_encode(['success' => false, 'message' => "Méthode non autorisée."]);
+                        exit();
+                    }
+                    break;
+
                     
                 case "logout":
                     $authController->logout();
