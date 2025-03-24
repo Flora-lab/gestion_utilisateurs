@@ -20,8 +20,6 @@ class User {
             return false;
         }
     }
-    
-    
 
     public function createUser($username, $email, $password, $role_id = 2) {
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
@@ -68,12 +66,47 @@ class User {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
     public function deleteUser($userId) {
         $sql = "DELETE FROM users WHERE id = ?";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$userId]);
     }
+    public function logLogin($userId, $ipAddress) {
+        $sql = "INSERT INTO login_logs (user_id, ip_address) VALUES (?, ?)";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([$userId, $ipAddress]);
+    }
+    
+    
+    public function toggleStatus($userId) {
+        $sql = "SELECT status FROM users WHERE id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+        if ($user) {
+            $newStatus = ($user['status'] === 'active') ? 'inactive' : 'active';
+            $updateSql = "UPDATE users SET status = ? WHERE id = ?";
+            $updateStmt = $this->pdo->prepare($updateSql);
+            return $updateStmt->execute([$newStatus, $userId]);
+        }
+        return false;
+    }
+    public function getLoginLogsByUserId($userId) {
+        $sql = "SELECT login_time, ip_address FROM login_logs WHERE user_id = ? ORDER BY login_time DESC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getUserStatus($userId) {
+        $sql = "SELECT status FROM users WHERE id = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $user ? $user['status'] : null;
+    }
+    
 
     public function updateUser($userId, $username, $email, $role_id) {
         $sql = "UPDATE users SET username = ?, email = ?, role_id = ? WHERE id = ?";
@@ -92,6 +125,19 @@ class User {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$userId]);
     }
+
+    public function updateUserWithPassword($userId, $username, $email, $password) {
+        try {
+            $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+            $sql = "UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$username, $email, $hashedPassword, $userId]);
+        } catch (PDOException $e) {
+            error_log("Erreur SQL : " . $e->getMessage());
+            return false;
+        }
+    }
+    
 
     public function getRecentUsers($limit = 5) {
         $sql = "SELECT username, email FROM users ORDER BY created_at DESC LIMIT ?";
@@ -131,11 +177,12 @@ class User {
     }
 
     public function getUserById($id) {
-        $sql = "SELECT id, username, email, role_id FROM users WHERE id = ?";
+        $sql = "SELECT id, username, email, role_id, created_at, last_login FROM users WHERE id = ?";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
     public function editUser($userId, $username, $email) {
         try {
             $sql = "UPDATE users SET username = ?, email = ? WHERE id = ?";

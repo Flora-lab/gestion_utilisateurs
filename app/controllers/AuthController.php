@@ -50,28 +50,36 @@ class AuthController {
      */
     public function login($username, $password) {
         $user = $this->userModel->getUserByUsername($username);
-
+    
         if (!$user) { 
             $_SESSION['error'] = "Aucun utilisateur trouvé avec ce nom d'utilisateur.";
             header("Location: /index.php?action=login");
             exit();
         }
-
+    
         if (!password_verify($password, $user['password'])) {
             $_SESSION['error'] = "Mot de passe incorrect.";
             header("Location: /index.php?action=login");
             exit();
         }
-
+    
         // Stocker les infos de l'utilisateur après connexion réussie
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['email'] = $user['email'];
+        $_SESSION['created_at'] = $user['created_at'];
+        $_SESSION['last_login'] = $user['last_login'];
         $_SESSION['role'] = $this->userModel->getUserRole($user['id']); 
-
+        
+        // Obtenir l'adresse IP de l'utilisateur
+        $ipAddress = $_SERVER['REMOTE_ADDR'];
+    
         // Mettre à jour le dernier login
         $this->userModel->updateLastLogin($user['id']);
-
+        
+        // Insérer le log de connexion
+        $this->userModel->logLogin($user['id'], $ipAddress);
+    
         // Redirection selon le rôle
         if ($_SESSION['role'] === "Admin") {
             header("Location: /index.php?action=profile_admin");
@@ -80,6 +88,7 @@ class AuthController {
         }
         exit();
     }
+    
 
     /**
      * Déconnexion de l'utilisateur

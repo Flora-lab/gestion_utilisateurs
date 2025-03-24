@@ -16,6 +16,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
     <title>Dashboard Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 <body class="bg-gray-100">
 
@@ -26,7 +27,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
         <h2 class="text-xl font-bold">SiteName</h2>
         <ul class="mt-6 space-y-4">
             <li><a href="/index.php?action=dashboard" class="block px-4 py-2 rounded hover:bg-blue-700">Dashboard</a></li>
-            <li><a href="/index.php?action=students" class="block px-4 py-2 rounded hover:bg-blue-700">Students</a></li>
             <li><a href="/index.php?action=logout" class="block px-4 py-2 rounded hover:bg-red-600">Déconnexion</a></li>
         </ul>
     </div>
@@ -178,6 +178,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
                 </thead>
                 <tbody>
                     <?php foreach ($users as $user): ?>
+                        
                         <tr class="border-t">
                             <td class="py-2 px-4"><?php echo $user['username']; ?></td>
                             <td class="py-2 px-4"><?php echo $user['email']; ?></td>

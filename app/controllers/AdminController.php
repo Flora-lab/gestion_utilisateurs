@@ -36,39 +36,39 @@ class AdminController {
         require_once __DIR__ . '/../views/admin/dashboard.php';
     }
 
-    public function deleteUser($userId) {
-        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-            $_SESSION['error'] = "Accès refusé.";
-            header("Location: /index.php?action=welcome");
+    public function deleteUser($data) {
+        $userId = $data['user_id'] ?? null;
+        if (!$userId) {
+            echo json_encode(['success' => false, 'message' => "ID utilisateur manquant."]);
             exit();
         }
-
-        if ($this->userModel->deleteUser($userId)) {
-            $_SESSION['success'] = "Utilisateur supprimé avec succès.";
+    
+        $result = $this->userModel->deleteUser($userId);
+        if ($result) {
+            echo json_encode(['success' => true]);
         } else {
-            $_SESSION['error'] = "Erreur lors de la suppression.";
+            echo json_encode(['success' => false, 'message' => "Erreur lors de la suppression."]);
         }
-
-        header("Location: /index.php?action=dashboard");
-        exit();
+        exit(); // IMPORTANT : Empêche l'affichage HTML
     }
-
-    public function toggleUserStatus($userId) {
-        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-            $_SESSION['error'] = "Accès refusé.";
-            header("Location: /index.php?action=welcome");
+    
+    public function toggleUserStatus($data) {
+        $userId = $data['user_id'] ?? null;
+        if (!$userId) {
+            echo json_encode(['success' => false, 'message' => "ID utilisateur manquant."]);
             exit();
         }
-
-        if ($this->userModel->toggleStatus($userId)) {
-            $_SESSION['success'] = "Statut de l'utilisateur mis à jour.";
+    
+        $result = $this->userModel->toggleStatus($userId);
+        if ($result) {
+            $newStatus = $this->userModel->getUserStatus($userId);
+            echo json_encode(['success' => true, 'new_status' => $newStatus]);
         } else {
-            $_SESSION['error'] = "Erreur lors de la mise à jour du statut.";
+            echo json_encode(['success' => false, 'message' => "Erreur lors du changement de statut."]);
         }
-
-        header("Location: /index.php?action=dashboard");
-        exit();
+        exit(); // IMPORTANT : Empêche l'affichage HTML
     }
+    
 
     public function updateUser($userId, $username, $email, $role) {
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {

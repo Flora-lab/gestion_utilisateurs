@@ -45,6 +45,38 @@ class Router {
                     }
                     break;
 
+            case "updateProfileAdmin":
+                if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
+                    $userModel = new User();
+                    $username = $_POST['username'];
+                    $email = $_POST['email'];
+                    $password = $_POST['password'] ?? null;
+
+                    if (empty($username) || empty($email)) {
+                        $_SESSION['error'] = "Veuillez remplir tous les champs obligatoires.";
+                        header("Location: /index.php?action=editProfileAdmin");
+                        exit();
+                    }
+
+                    // Mise à jour des informations
+                    if ($password) {
+                        $userModel->updateUserWithPassword($_SESSION['user_id'], $username, $email, $password);
+                    } else {
+                        $userModel->updateUser($_SESSION['user_id'], $username, $email, 1);
+                    }
+
+                    // Mise à jour de la session
+                    $_SESSION['username'] = $username;
+                    $_SESSION['email'] = $email;
+
+                    $_SESSION['success'] = "Profil mis à jour avec succès.";
+                    header("Location: /index.php?action=profile_admin");
+                    exit();
+                }
+                header("Location: /index.php?action=home");
+                break;
+
+
                 case "editUser":
                     $adminController->editUser($_POST);
                     break;
@@ -79,6 +111,15 @@ class Router {
                     }
                     require_once __DIR__ . '/../app/views/auth/profile_user.php';
                     break;
+                case "editProfileAdmin":
+                    if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
+                        header("Location: /index.php?action=home");
+                        exit();
+                    }
+                    require_once __DIR__ . '/../views/admin/edit_profile.php';
+                    break;
+
+
                 case "dashboard":
                     if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
                         $_SESSION['error'] = "Accès refusé.";
@@ -102,6 +143,26 @@ class Router {
                     } else {
                         echo json_encode(['success' => false, 'message' => "Méthode non autorisée."]);
                         exit();
+                    }
+                    break;
+
+                case "editProfile":
+                    require_once __DIR__ . '/../app/views/auth/edit_profile.php';
+                    break;
+
+                case "loginHistory":
+                    require_once __DIR__ . '/../app/views/auth/login_history.php';
+                    break;
+
+                case "deleteUser":
+                    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                        $adminController->deleteUser($_POST);
+                    }
+                    break;
+
+                case "toggleUserStatus":
+                    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                        $adminController->toggleUserStatus($_POST);
                     }
                     break;
 
