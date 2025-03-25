@@ -75,6 +75,16 @@ class Router {
                 }
                 header("Location: /index.php?action=home");
                 break;
+                case "updateProfile":
+                    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                        $authController = new AuthController();
+                        $authController->updateProfile($_POST);
+                    } else {
+                        $_SESSION['error'] = "Méthode non autorisée.";
+                        header("Location: /index.php?action=profile_user");
+                    }
+                    break;
+                               
 
 
                 case "editUser":
@@ -97,6 +107,7 @@ class Router {
                 case "login":
                     require_once __DIR__ . '/../app/views/auth/login.php';
                     break;
+                    
                 case "profile_admin":
                     if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
                         header("Location: /index.php?action=home");
@@ -104,6 +115,7 @@ class Router {
                     }
                     require_once __DIR__ . '/../app/views/admin/profile_admin.php';
                     break;
+
                 case "profile_user":
                     if (!isset($_SESSION['user_id'])) {
                         header("Location: /index.php?action=login");
@@ -111,6 +123,7 @@ class Router {
                     }
                     require_once __DIR__ . '/../app/views/auth/profile_user.php';
                     break;
+
                 case "editProfileAdmin":
                     if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
                         header("Location: /index.php?action=home");

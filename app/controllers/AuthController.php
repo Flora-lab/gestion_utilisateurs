@@ -11,6 +11,7 @@ class AuthController {
     public function __construct() {
         $this->userModel = new User();
     }
+    
 
     /**
      * Inscription d'un nouvel utilisateur
@@ -88,6 +89,28 @@ class AuthController {
         }
         exit();
     }
+    public function updateProfile($data) {
+        $userId = $_SESSION['user_id'];
+        $username = $data['username'] ?? null;
+        $email = $data['email'] ?? null;
+    
+        if (!$username || !$email) {
+            echo json_encode(['success' => false, 'message' => "Tous les champs sont requis."]);
+            exit();
+        }
+    
+        if ($this->userModel->updateUser($userId, $username, $email)) {
+            // Mise à jour de la session
+            $_SESSION['username'] = $username;
+            $_SESSION['email'] = $email;
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => "Erreur lors de la mise à jour."]);
+        }
+        exit();
+    }
+    
+    
     
 
     /**

@@ -71,8 +71,9 @@ class User {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$userId]);
     }
+   
     public function logLogin($userId, $ipAddress) {
-        $sql = "INSERT INTO login_logs (user_id, ip_address) VALUES (?, ?)";
+        $sql = "INSERT INTO login_logs (user_id, login_time, ip_address) VALUES (?, NOW(), ?)";
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$userId, $ipAddress]);
     }
@@ -99,6 +100,7 @@ class User {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    
     public function getUserStatus($userId) {
         $sql = "SELECT status FROM users WHERE id = ?";
         $stmt = $this->pdo->prepare($sql);
@@ -108,11 +110,17 @@ class User {
     }
     
 
-    public function updateUser($userId, $username, $email, $role_id) {
-        $sql = "UPDATE users SET username = ?, email = ?, role_id = ? WHERE id = ?";
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$username, $email, $role_id, $userId]);
+    public function updateUser($userId, $username, $email) {
+        try {
+            $sql = "UPDATE users SET username = ?, email = ? WHERE id = ?";
+            $stmt = $this->pdo->prepare($sql);
+            return $stmt->execute([$username, $email, $userId]);
+        } catch (PDOException $e) {
+            error_log("Erreur SQL : " . $e->getMessage());
+            return false;
+        }
     }
+    
 
     public function updateUserStatus($userId, $status) {
         $sql = "UPDATE users SET status = ? WHERE id = ?";

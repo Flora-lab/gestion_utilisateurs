@@ -23,6 +23,8 @@ $loginLogs = $userModel->getLoginLogsByUserId($_SESSION['user_id']);
 </head>
 <body class="bg-gray-100 min-h-screen p-4 flex justify-center items-center">
 
+
+
 <div class="max-w-4xl w-full bg-white rounded-lg shadow-md p-6">
     <h2 class="text-2xl font-semibold mb-4">📊 Historique de Connexion</h2>
     

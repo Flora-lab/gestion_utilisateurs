@@ -50,7 +50,7 @@ $loginLogs = $userModel->getLoginLogsByUserId($_SESSION['user_id']);
     <?php endif; ?>
 
     <div class="mt-4">
-        <a href="/index.php?action=profile_user" class="bg-blue-500 text-white px-4 py-2 rounded">Retour au Profil</a>
+        <a href="/index.php?action=profile_admin" class="bg-blue-500 text-white px-4 py-2 rounded">Retour au Profil</a>
     </div>
 </div>
 
